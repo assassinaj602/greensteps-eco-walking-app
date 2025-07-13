@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/route_model.dart';
+import '../config/app_config.dart';
 
 class MapsService {
-  // Add your Google Maps API key here
-  static const String _apiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
+  // Google Maps API key from config
+  static const String _apiKey = AppConfig.googleMapsApiKey;
   static const String _baseUrl = 'https://maps.googleapis.com/maps/api';
 
   // Get eco-friendly route using Google Directions API

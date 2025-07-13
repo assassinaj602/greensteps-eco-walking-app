@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import '../providers/auth_provider.dart';
 import '../providers/app_provider.dart';
 import '../services/goal_service.dart';
@@ -575,6 +576,89 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Map preview
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: gmaps.GoogleMap(
+                initialCameraPosition: gmaps.CameraPosition(
+                  target:
+                      route.polylinePoints.isNotEmpty
+                          ? gmaps.LatLng(
+                            route.polylinePoints.first.latitude,
+                            route.polylinePoints.first.longitude,
+                          )
+                          : const gmaps.LatLng(
+                            37.7749,
+                            -122.4194,
+                          ), // Default to SF
+                  zoom: 13,
+                ),
+                polylines: {
+                  gmaps.Polyline(
+                    polylineId: const gmaps.PolylineId('route'),
+                    points:
+                        route.polylinePoints
+                            .map(
+                              (point) =>
+                                  gmaps.LatLng(point.latitude, point.longitude),
+                            )
+                            .toList(),
+                    color: const Color(0xFF4CAF50),
+                    width: 4,
+                  ),
+                },
+                markers: {
+                  if (route.polylinePoints.isNotEmpty) ...[
+                    gmaps.Marker(
+                      markerId: const gmaps.MarkerId('start'),
+                      position: gmaps.LatLng(
+                        route.polylinePoints.first.latitude,
+                        route.polylinePoints.first.longitude,
+                      ),
+                      infoWindow: const gmaps.InfoWindow(title: 'Start'),
+                    ),
+                    gmaps.Marker(
+                      markerId: const gmaps.MarkerId('end'),
+                      position: gmaps.LatLng(
+                        route.polylinePoints.last.latitude,
+                        route.polylinePoints.last.longitude,
+                      ),
+                      infoWindow: const gmaps.InfoWindow(title: 'Destination'),
+                    ),
+                  ],
+                  // Add green zone markers
+                  ...route.greenZones.map(
+                    (zone) => gmaps.Marker(
+                      markerId: gmaps.MarkerId('green_${zone.name}'),
+                      position: gmaps.LatLng(
+                        zone.position.latitude,
+                        zone.position.longitude,
+                      ),
+                      icon: gmaps.BitmapDescriptor.defaultMarkerWithHue(
+                        gmaps.BitmapDescriptor.hueGreen,
+                      ),
+                      infoWindow: gmaps.InfoWindow(
+                        title: zone.name,
+                        snippet: zone.type,
+                      ),
+                    ),
+                  ),
+                },
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+                myLocationButtonEnabled: false,
+              ),
+            ),
           ),
 
           const SizedBox(height: 16),
